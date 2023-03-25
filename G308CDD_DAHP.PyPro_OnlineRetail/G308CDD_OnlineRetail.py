@@ -5,6 +5,8 @@ from sklearn import preprocessing
 from sklearn.feature_selection import SelectKBest
 import matplotlib.pyplot as plt
 
+##first Test
+
 cdd = pd.read_csv("./G308CDD_DAHP_OnlineRetail.csv", encoding="ISO-8859-1")
 print(cdd.head(10))
 
