@@ -4,46 +4,79 @@ from scipy import stats
 from sklearn import preprocessing
 from sklearn.feature_selection import SelectKBest
 import matplotlib.pyplot as plt
+import tkinter as tk
+import speech_recognition as sr
+from tkinter import messagebox
+from tkinter import ttk
 
-##first Test
 
 cdd = pd.read_csv("./G308CDD_DAHP_OnlineRetail.csv", encoding="ISO-8859-1")
-print(cdd.head(10))
 
-print("Do lon cua bang [frame]:", cdd.shape)
+# Tạo đối tượng nhận diện giọng nói
+r = sr.Recognizer()
 
-cdd_null_percent = cdd.isnull().sum() / len(cdd) * 100
-print("Phần trăm các cột bị null:")
-print(cdd_null_percent.sort_values(ascending=0))
+# Tạo đối tượng tkinter
+cdd_root = tk.Tk()
+cdd_root.title("Ứng dụng EDA")
+cdd_root.geometry("500x300")
 
-plt.bar(cdd_null_percent.index, cdd_null_percent.values)
-plt.xticks(rotation=90)  # dùng để quay nhãn của trục x đi một góc 90 độ
-plt.ylabel("% giá trị null")
-plt.show()
 
-cdd = cdd.drop(columns=["CustomerID"])
-print("Shape: ", cdd.shape)
+# Tạo các hàm xử lý
+def remove_null_col():
+    global cdd
+    cdd = cdd.dropna(axis=1)
+    messagebox.showinfo("Thông báo", "Đã bỏ các cột null")
 
-print(cdd["Country"].unique())
 
-cdd_label = preprocessing.LabelEncoder()
-cdd["Country"] = cdd_label.fit_transform(cdd["Country"])
-print(cdd.head())
+def remove_null_rows():
+    global cdd
+    cdd = cdd.dropna(axis=0)
+    messagebox.showerror("Thông báo", "Đã bỏ các dòng null")
 
-cdd["Description"] = cdd["Description"].fillna(0)
-cdd.isnull().sum()
 
-cdd["Description"].value_counts().head()
+def rename_col(old_col, new_col):
+    global cdd
 
-cdd["Year"] = pd.DatetimeIndex(cdd["InvoiceDate"]).year
-cdd["Month"] = pd.DatetimeIndex(cdd["InvoiceDate"]).month
-cdd["Day"] = pd.DatetimeIndex(cdd["InvoiceDate"]).day
-cdd.tail()
+    result = messagebox.askquestion("Xác nhận", "Bạn có muốn lưu thay đổi không?")
+    if result == "yes":
+        cdd = cdd.rename(columns={str(old_col): str(new_col)})
+        rename_window.destroy()
+    else:
+        rename_window.destroy()
 
-cdd["InvoiceDate"] = pd.to_datetime(cdd["InvoiceDate"])
-cdd.head()
 
-z = np.abs(stats.zscore(cdd._get_numeric_data()))
-print("MA TRAN Z-SCORE\n")
-print(z)
-print(cdd.tail())
+def rename_window():
+    global rename_window
+    rename_window = tk.Toplevel(cdd_root)
+    rename_window.title("Rename Column")
+    rename_window.geometry("300x100")
+
+    lbl_old_name_col = tk.Label(rename_window, text="Name of old column:")
+    lbl_old_name_col.grid(column=0, row=0)
+
+    lbl_new_name_column = tk.Label(rename_window, text="Name of new column:")
+    lbl_new_name_column.grid(column=0, row=1)
+
+    options = cdd.columns.values.tolist()
+    cbx_old_name_column = ttk.Combobox(
+        rename_window, values=options, width=20, state="readonly"
+    )
+    cbx_old_name_column.grid(column=1, row=0)
+    cbx_old_name_column.current(0)
+
+    txt_new_name_column = tk.Text(rename_window, width=20, height=1)
+    txt_new_name_column.grid(column=1, row=1)
+
+    def submit():
+        old_col = cbx_old_name_column.get()
+        new_col = txt_new_name_column.get("1.0", "end-1c")
+        rename_col(old_col, new_col)
+
+    button_submit = tk.Button(rename_window, text="Submit", command=submit)
+    button_submit.grid(column=1, row=2)
+
+
+button = tk.Button(cdd_root, text="Click me!", command=rename_window)
+button.grid(column=0, row=0)
+
+cdd_root.mainloop()
