@@ -11,7 +11,7 @@ from tkinter import ttk
 from tkinter import filedialog
 
 
-# cdd = pd.read_csv("./G308CDD_DAHP_OnlineRetail.csv", encoding="ISO-8859-1")
+cdd = pd.read_csv("./G308CDD_DAHP_OnlineRetail.csv", encoding="ISO-8859-1")
 # global cdd
 
 
@@ -21,7 +21,7 @@ r = sr.Recognizer()
 # Tạo đối tượng tkinter
 cdd_root = tk.Tk()
 cdd_root.title("Ứng dụng EDA")
-cdd_root.geometry("500x300")
+cdd_root.geometry("600x500")
 
 
 # Tạo các hàm xử lý
@@ -61,6 +61,10 @@ def renameCol(old_col, new_col):
     else:
         return
         # rename_window.destroy()
+
+
+def dropDuplicates():
+    cdd.drop_duplicates(inplace=True)
 
 
 # Tạo cửa sổ để thực hiện đổi tên 1 cột
@@ -167,7 +171,7 @@ btn_OpenTextFile.grid(column=0, row=15)
 
 lbl_output = tk.Label(cdd_root)
 # lbl_output.grid(column=2, row=0)
-lbl_output.place(x=200)
+lbl_output.place(x=200, y=200)
 
 lbl_output_bar = tk.Label(cdd_root)
 # lbl_output.grid(column=2, row=0)
@@ -193,5 +197,10 @@ btn_show_description = tk.Button(
     cdd_root, text="Show Description", width=15, command=showDescription
 )
 btn_show_description.grid(column=0, row=4)
+
+btn_drop_duplicates = tk.Button(
+    cdd_root, text="Drop Duplicates", width=15, command=dropDuplicates
+)
+btn_drop_duplicates.grid(column=1, row=0)
 
 cdd_root.mainloop()
