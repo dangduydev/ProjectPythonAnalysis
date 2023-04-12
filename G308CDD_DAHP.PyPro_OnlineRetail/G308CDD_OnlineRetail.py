@@ -8,9 +8,12 @@ import tkinter as tk
 import speech_recognition as sr
 from tkinter import messagebox
 from tkinter import ttk
+from tkinter import filedialog
 
 
-cdd = pd.read_csv("./G308CDD_DAHP_OnlineRetail.csv", encoding="ISO-8859-1")
+# cdd = pd.read_csv("./G308CDD_DAHP_OnlineRetail.csv", encoding="ISO-8859-1")
+# global cdd
+
 
 # Tạo đối tượng nhận diện giọng nói
 r = sr.Recognizer()
@@ -22,20 +25,34 @@ cdd_root.geometry("500x300")
 
 
 # Tạo các hàm xử lý
-def remove_null_col():
-    global cdd
+
+
+def openTextFile():
+    global filePath, cdd
+    filePath = filedialog.askopenfilename(
+        title="Chọn tệp CSV",
+        filetypes=(("Text File (.txt)", "*.txt"), ("CSV File (.csv)", "*.csv")),
+    )
+
+    f1 = open(filePath, "r", encoding="utf-8")
+    cdd = pd.read_csv(filePath, encoding="ISO-8859-1")
+    f1.close()
+
+
+def removeNullCols():
+    # global cdd
     cdd.dropna(axis=1, inplace=True)
     messagebox.showinfo("Thông báo", "Đã bỏ các cột null")
 
 
-def remove_null_rows():
-    global cdd
+def removeNullRows():
+    # global cdd
     cdd.dropna(axis=0, inplace=True)
     messagebox.showinfo("Thông báo", "Đã bỏ các dòng null")
 
 
-def rename_col(old_col, new_col):
-    global cdd
+def renameCol(old_col, new_col):
+    # global cdd
 
     result = messagebox.askquestion("Xác nhận", "Bạn có muốn lưu thay đổi không?")
     if result == "yes":
@@ -46,7 +63,8 @@ def rename_col(old_col, new_col):
         # rename_window.destroy()
 
 
-def rename_window():
+# Tạo cửa sổ để thực hiện đổi tên 1 cột
+def renameColWindow():
     global rename_window
     rename_window = tk.Toplevel(cdd_root)
     rename_window.title("Rename Column")
@@ -55,40 +73,40 @@ def rename_window():
     lbl_old_name_col = tk.Label(rename_window, text="Name of old column:")
     lbl_old_name_col.grid(column=0, row=0)
 
-    lbl_new_name_column = tk.Label(rename_window, text="Name of new column:")
-    lbl_new_name_column.grid(column=0, row=1)
+    lbl_new_name_col = tk.Label(rename_window, text="Name of new column:")
+    lbl_new_name_col.grid(column=0, row=1)
 
     options = cdd.columns.values.tolist()
-    cbx_old_name_column = ttk.Combobox(
+    cbx_old_name_col = ttk.Combobox(
         rename_window, values=options, width=20, state="readonly"
     )
-    cbx_old_name_column.grid(column=1, row=0)
-    cbx_old_name_column.current(0)
+    cbx_old_name_col.grid(column=1, row=0)
+    cbx_old_name_col.current(0)
 
-    txt_new_name_column = tk.Text(rename_window, width=20, height=1)
-    txt_new_name_column.grid(column=1, row=1)
+    txt_new_name_col = tk.Text(rename_window, width=20, height=1)
+    txt_new_name_col.grid(column=1, row=1)
 
     def submit():
-        old_col = cbx_old_name_column.get()
-        new_col = txt_new_name_column.get("1.0", "end-1c")
-        rename_col(old_col, new_col)
+        old_col = cbx_old_name_col.get()
+        new_col = txt_new_name_col.get("1.0", "end-1c")
+        renameCol(old_col, new_col)
 
-    button_submit = tk.Button(rename_window, text="Submit", command=submit)
-    button_submit.grid(column=1, row=2)
+    btn_submit = tk.Button(rename_window, text="Submit", command=submit)
+    btn_submit.grid(column=1, row=2)
 
 
-def show_shape():
+def showShape():
     lbl_output.config(text=cdd.shape)
 
 
-def cal_percent_null():
-    global cdd
+def calPercentNull():
+    # global cdd
     result = cdd.isnull().sum() * 100 / len(cdd)
     return result.sort_values(ascending=0)
 
 
-def show_percent_null():
-    _percent_null = cal_percent_null()
+def showPercentNull():
+    _percent_null = calPercentNull()
     lbl_output.config(text=_percent_null)
     result = messagebox.askquestion(
         "Question", "Bạn có muốn xuất dưới dạng biểu đồ không?"
@@ -100,7 +118,7 @@ def show_percent_null():
         plt.show()
 
 
-def drop_col(name_col):
+def dropCol(name_col):
     result = messagebox.askquestion(
         "Thông báo", "Bạn chắc chắn muốn xóa cột" + str(name_col)
     )
@@ -108,7 +126,7 @@ def drop_col(name_col):
         cdd.drop(columns=str(name_col), inplace=True)
 
 
-def drop_col_window():
+def dropColWindow():
     global drop_col_window
     drop_col_window = tk.Toplevel(cdd_root)
     drop_col_window.title("Drop Column")
@@ -118,21 +136,21 @@ def drop_col_window():
     lbl_name_col.grid(column=0, row=0)
 
     options = cdd.columns.values.tolist()
-    cbx_name_column = ttk.Combobox(
+    cbx_name_col = ttk.Combobox(
         drop_col_window, values=options, width=20, state="readonly"
     )
-    cbx_name_column.grid(column=1, row=0)
-    cbx_name_column.current(0)
+    cbx_name_col.grid(column=1, row=0)
+    cbx_name_col.current(0)
 
     def submit():
-        name_col = cbx_name_column.get()
-        drop_col(name_col)
+        name_col = cbx_name_col.get()
+        dropCol(name_col)
 
-    button_submit = tk.Button(drop_col_window, text="Submit", command=submit)
-    button_submit.grid(column=1, row=2)
+    btn_submit = tk.Button(drop_col_window, text="Submit", command=submit)
+    btn_submit.grid(column=1, row=2)
 
 
-def show_description():
+def showDescription():
     lbl_output.config(text=cdd.describe())
 
 
@@ -142,6 +160,11 @@ cdd_root.columnconfigure(1, minsize=50)
 
 # Tạo các toolbox
 
+btn_OpenTextFile = tk.Button(
+    cdd_root, text="Open Text file", width=15, command=openTextFile
+)
+btn_OpenTextFile.grid(column=0, row=15)
+
 lbl_output = tk.Label(cdd_root)
 # lbl_output.grid(column=2, row=0)
 lbl_output.place(x=200)
@@ -150,25 +173,25 @@ lbl_output_bar = tk.Label(cdd_root)
 # lbl_output.grid(column=2, row=0)
 lbl_output_bar.place(x=250)
 
-btn_show_shape = tk.Button(cdd_root, text="Show Shape", width=15, command=show_shape)
+btn_show_shape = tk.Button(cdd_root, text="Show Shape", width=15, command=showShape)
 btn_show_shape.grid(column=0, row=0)
 
-btn_rename = tk.Button(cdd_root, text="Rename Column", width=15, command=rename_window)
+btn_rename = tk.Button(
+    cdd_root, text="Rename Column", width=15, command=renameColWindow
+)
 btn_rename.grid(column=0, row=1)
 
 btn_show_percent_null = tk.Button(
-    cdd_root, text="Percent null", width=15, command=show_percent_null
+    cdd_root, text="Percent null", width=15, command=showPercentNull
 )
 btn_show_percent_null.grid(column=0, row=2)
 
-btn_drop_col = tk.Button(
-    cdd_root, text="Drop Column", width=15, command=drop_col_window
-)
+btn_drop_col = tk.Button(cdd_root, text="Drop Column", width=15, command=dropColWindow)
 btn_drop_col.grid(column=0, row=3)
 
 btn_show_description = tk.Button(
-    cdd_root, text="Show Description", width=15, command=show_description
+    cdd_root, text="Show Description", width=15, command=showDescription
 )
-btn_show_description.grid(column=0, row=3)
+btn_show_description.grid(column=0, row=4)
 
 cdd_root.mainloop()
